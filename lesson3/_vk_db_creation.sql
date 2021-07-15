@@ -47,7 +47,11 @@ CREATE TABLE chats (
 DROP TABLE IF EXISTS users_chats;
 CREATE TABLE users_chats (
     user_id BIGINT UNSIGNED NOT NULL,
-    chat_id BIGINT UNSIGNED NOT NULL
+    chat_id BIGINT UNSIGNED NOT NULL,
+
+    PRIMARY KEY (user_id, chat_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (chat_id) REFERENCES chats(id)
 );
 
 DROP TABLE IF EXISTS messages;
