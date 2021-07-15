@@ -128,7 +128,7 @@ DROP TABLE IF EXISTS user_likes;
 CREATE TABLE user_likes(
     initiator_user_id BIGINT UNSIGNED NOT NULL,
     target_user_id BIGINT UNSIGNED NOT NULL,
-    create DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (initiator_user_id, target_user_id),
     FOREIGN KEY (initiator_user_id) REFERENCES users(id),
@@ -143,7 +143,7 @@ DROP TABLE IF EXISTS messages_likes;
 CREATE TABLE messages_likes(
     user_id BIGINT UNSIGNED NOT NULL,
     message_id BIGINT UNSIGNED NOT NULL,
-    create DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (user_id, message_id),
     FOREIGN KEY (user_id) REFERENCES users(id),
