@@ -8,7 +8,7 @@ CREATE TABLE users (
     firstname VARCHAR(50),
     lastname VARCHAR(50) COMMENT 'Фамилия', -- COMMENT на случай, если имя неочевидное
     email VARCHAR(120) UNIQUE,
- 	password_hash VARCHAR(100), -- 123456 => vzx;clvgkajrpo9udfxvsldkrn24l5456345t
+ 	password_hash CHAR(32), -- так как алгоритм шифрования мы знаем - то знаем точную и постоянную длину
 	phone BIGINT UNSIGNED UNIQUE, 
 	
     INDEX users_firstname_lastname_idx(firstname, lastname)
@@ -19,11 +19,10 @@ CREATE TABLE `profiles` (
 	user_id BIGINT UNSIGNED NOT NULL UNIQUE,
     gender CHAR(1),
     birthday DATE,
-	photo_id BIGINT UNSIGNED NULL,
+	photo_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT NOW(),
+    updated_at DATETIME DEFAULT NOW() ON UPDATE NOW(), -- когда меняли профиль в последний раз
     hometown VARCHAR(100)
-	
-    -- , FOREIGN KEY (photo_id) REFERENCES media(id) -- пока рано, т.к. таблицы media еще нет
 );
 
 ALTER TABLE `profiles` ADD CONSTRAINT fk_user_id
@@ -31,16 +30,36 @@ ALTER TABLE `profiles` ADD CONSTRAINT fk_user_id
     ON UPDATE CASCADE -- (значение по умолчанию)
     ON DELETE RESTRICT; -- (значение по умолчанию)
 
+-- предложение такое - между пользователями и сообщениями необходима прослойка
+-- назовем эту сущность беседа или чат
+--
+-- получаемые преимцщества:
+-- 1) любое сообщение может видеть неограниченное количество участников
+-- 2) легко получить все беседы для конкретного участника (для страницы сообщения/мессенджер например)
+--
+DROP TABLE IF EXISTS chats;
+CREATE TABLE chats (
+    id SERIAL
+);
+
+-- таблица, связывающая пользователей с чатами
+-- многие-ко-многим - у пользователя много чатов и у чата много пользователей
+DROP TABLE IF EXISTS users_chats;
+CREATE TABLE users_chats (
+    user_id BIGINT UNSIGNED NOT NULL,
+    chat_id BIGINT UNSIGNED NOT NULL
+);
+
 DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
 	id SERIAL, -- SERIAL = BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE
-	from_user_id BIGINT UNSIGNED NOT NULL,
-    to_user_id BIGINT UNSIGNED NOT NULL,
+	user_id BIGINT UNSIGNED NOT NULL, -- у чата есть только создатель, кому видно сообщение определятеся по чату
+    chat_id BIGINT UNSIGNED NOT NULL,
     body TEXT,
     created_at DATETIME DEFAULT NOW(), -- можно будет даже не упоминать это поле при вставке
 
-    FOREIGN KEY (from_user_id) REFERENCES users(id),
-    FOREIGN KEY (to_user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (chat_id) REFERENCES chats(id)
 );
 
 DROP TABLE IF EXISTS friend_requests;
