@@ -8,7 +8,8 @@ CREATE TABLE `users` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(64) NOT NULL,
     `surname` VARCHAR(64) NOT NULL,
-    `password` CHAR(32) NOT NULL
+    `password` CHAR(32) NOT NULL,
+    `balance` DECIMAL(11,2)
 ) COMMENT 'пользователи';
 
 -- таблица проектов
@@ -23,5 +24,12 @@ CREATE TABLE `projects` (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- таблица ботов
 
+-- таблица типов ботов (квиз, фидбек, консультант, продажник и тд)
 
+-- таблица элементов ботов
+
+-- таблица платежных транзакций (пополнения счета, расход, вывод)
+
+--
