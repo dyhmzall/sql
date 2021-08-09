@@ -1,16 +1,16 @@
-DROP DATABASE IF EXISTS vk;
+﻿DROP DATABASE IF EXISTS vk;
 CREATE DATABASE vk;
 USE vk;
 
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
-	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     firstname VARCHAR(50),
     lastname VARCHAR(50) COMMENT 'Фамилия', -- COMMENT на случай, если имя неочевидное
     email VARCHAR(120) UNIQUE,
  	password_hash VARCHAR(100), -- 123456 => vzx;clvgkajrpo9udfxvsldkrn24l5456345t
-	phone BIGINT UNSIGNED UNIQUE, 
-	
+	phone BIGINT UNSIGNED UNIQUE,
+
     INDEX users_firstname_lastname_idx(firstname, lastname)
 ) COMMENT 'юзеры';
 
@@ -22,7 +22,7 @@ CREATE TABLE `profiles` (
 	photo_id BIGINT UNSIGNED NULL,
     created_at DATETIME DEFAULT NOW(),
     hometown VARCHAR(100)
-	
+
     -- , FOREIGN KEY (photo_id) REFERENCES media(id) -- пока рано, т.к. таблицы media еще нет
 );
 
@@ -52,14 +52,14 @@ CREATE TABLE friend_requests (
     -- `status` TINYINT(1) UNSIGNED, -- в этом случае в коде хранили бы цифирный enum (0, 1, 2, 3...)
 	requested_at DATETIME DEFAULT NOW(),
 	updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP, -- можно будет даже не упоминать это поле при обновлении
-	
+
     PRIMARY KEY (initiator_user_id, target_user_id),
     FOREIGN KEY (initiator_user_id) REFERENCES users(id),
     FOREIGN KEY (target_user_id) REFERENCES users(id)-- ,
     -- CHECK (initiator_user_id <> target_user_id)
 );
 -- чтобы пользователь сам себе не отправил запрос в друзья
-ALTER TABLE friend_requests 
+ALTER TABLE friend_requests
 ADD CHECK(initiator_user_id <> target_user_id);
 
 DROP TABLE IF EXISTS communities;
@@ -67,7 +67,7 @@ CREATE TABLE communities(
 	id SERIAL,
 	name VARCHAR(150),
 	admin_user_id BIGINT UNSIGNED NOT NULL,
-	
+
 	INDEX communities_name_idx(name), -- индексу можно давать свое имя (communities_name_idx)
 	foreign key (admin_user_id) references users(id)
 );
@@ -76,7 +76,7 @@ DROP TABLE IF EXISTS users_communities;
 CREATE TABLE users_communities(
 	user_id BIGINT UNSIGNED NOT NULL,
 	community_id BIGINT UNSIGNED NOT NULL,
-  
+
 	PRIMARY KEY (user_id, community_id), -- чтобы не было 2 записей о пользователе и сообществе
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (community_id) REFERENCES communities(id)
@@ -115,12 +115,39 @@ CREATE TABLE likes(
     created_at DATETIME DEFAULT NOW()
 
     -- PRIMARY KEY (user_id, media_id) – можно было и так вместо id в качестве PK
-  	-- слишком увлекаться индексами тоже опасно, рациональнее их добавлять по мере необходимости (напр., провисают по времени какие-то запросы)  
+  	-- слишком увлекаться индексами тоже опасно, рациональнее их добавлять по мере необходимости (напр., провисают по времени какие-то запросы)
 
 /* намеренно забыли, чтобы позднее увидеть их отсутствие в ER-диаграмме
     , FOREIGN KEY (user_id) REFERENCES users(id)
     , FOREIGN KEY (media_id) REFERENCES media(id)
 */
+);
+
+-- таблица для лайков пользователей
+DROP TABLE IF EXISTS user_likes;
+CREATE TABLE user_likes(
+    initiator_user_id BIGINT UNSIGNED NOT NULL,
+    target_user_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (initiator_user_id, target_user_id),
+    FOREIGN KEY (initiator_user_id) REFERENCES users(id),
+    FOREIGN KEY (target_user_id) REFERENCES users(id)
+);
+
+ALTER TABLE user_likes
+ADD CHECK(initiator_user_id <> target_user_id);
+
+-- таблица для лайков сообщений (постов)
+DROP TABLE IF EXISTS messages_likes;
+CREATE TABLE messages_likes(
+    user_id BIGINT UNSIGNED NOT NULL,
+    message_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (user_id, message_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (message_id) REFERENCES messages(id)
 );
 
 DROP TABLE IF EXISTS `photo_albums`;
@@ -143,14 +170,14 @@ CREATE TABLE `photos` (
     FOREIGN KEY (media_id) REFERENCES media(id)
 );
 
-ALTER TABLE vk.likes 
-ADD CONSTRAINT likes_fk 
+ALTER TABLE vk.likes
+ADD CONSTRAINT likes_fk
 FOREIGN KEY (media_id) REFERENCES vk.media(id);
 
-ALTER TABLE vk.likes 
-ADD CONSTRAINT likes_fk_1 
+ALTER TABLE vk.likes
+ADD CONSTRAINT likes_fk_1
 FOREIGN KEY (user_id) REFERENCES vk.users(id);
 
-ALTER TABLE vk.profiles 
-ADD CONSTRAINT profiles_fk_1 
+ALTER TABLE vk.profiles
+ADD CONSTRAINT profiles_fk_1
 FOREIGN KEY (photo_id) REFERENCES media(id);
