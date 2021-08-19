@@ -38,7 +38,6 @@ DROP TABLE IF EXISTS `tasks`;
 CREATE TABLE `tasks`
 (
     `id`           SERIAL PRIMARY KEY,
-    `user_id`      BIGINT UNSIGNED NOT NULL,
     `status_id`    BIGINT UNSIGNED NOT NULL,
     `priority_id`  BIGINT UNSIGNED NOT NULL,
     `project_id`   BIGINT UNSIGNED NOT NULL,
@@ -50,7 +49,6 @@ CREATE TABLE `tasks`
     `deadline_at`  DATETIME,
     `planned_time` INT COMMENT 'запланированное время',
 
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
     FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`),
     FOREIGN KEY (`priority_id`) REFERENCES `priorities` (`id`),
     FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`)
@@ -81,17 +79,65 @@ DROP TABLE IF EXISTS `spend_times`;
 CREATE TABLE `spend_times`
 (
     `task_id`    BIGINT UNSIGNED NOT NULL,
+    `user_id`    BIGINT UNSIGNED NOT NULL,
     `start_time` DATETIME,
-    `end_time`   DATETIME
+    `end_time`   DATETIME,
+
+    FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 DROP TABLE IF EXISTS `filters`;
 CREATE TABLE `filters`
 (
-    `id` SERIAL PRIMARY KEY,
-    `name` VARCHAR(255) NOT NULL,
+    `id`      SERIAL PRIMARY KEY,
+    `name`    VARCHAR(255)    NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
-    `url` VARCHAR(255) NOT NULL,
+    `url`     VARCHAR(255)    NOT NULL,
 
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+);
 
+DROP TABLE IF EXISTS `roles`;
+CREATE TABLE `roles`
+(
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+DROP TABLE IF EXISTS `tasks_users_roles`;
+CREATE TABLE `tasks_users_roles`
+(
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `role_id` BIGINT UNSIGNED NOT NULL,
+
+    FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+);
+
+DROP TABLE IF EXISTS `projects_users_roles`;
+CREATE TABLE `projects_users_roles`
+(
+    `project_id` BIGINT UNSIGNED NOT NULL,
+    `user_id`    BIGINT UNSIGNED NOT NULL,
+    `role_id`    BIGINT UNSIGNED NOT NULL,
+
+    FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+);
+
+DROP TABLE IF EXISTS `comments`;
+CREATE TABLE `comments`
+(
+    `id`         SERIAL PRIMARY KEY,
+    `task_id`    BIGINT UNSIGNED NOT NULL,
+    `user_id`    BIGINT UNSIGNED NOT NULL,
+    `text`       TEXT,
+    `created_at` DATETIME DEFAULT NOW(),
+
+    FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
