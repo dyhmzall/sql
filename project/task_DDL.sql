@@ -8,9 +8,16 @@ CREATE TABLE `users`
     `id`         SERIAL PRIMARY KEY,
     `login`      VARCHAR(255)        NOT NULL,
     `password`   CHAR(32)            NOT NULL,
-    `first_name` VARCHAR(255),
-    `last_name`  VARCHAR(255),
+    `first_name` VARCHAR(255)        NOT NULL,
+    `last_name`  VARCHAR(255)        NOT NULL,
     `email`      VARCHAR(255) UNIQUE NOT NULL
+);
+
+DROP TABLE IF EXISTS `projects`;
+CREATE TABLE `projects`
+(
+    `id`   SERIAL PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL
 );
 
 DROP TABLE IF EXISTS `statuses`;
@@ -34,6 +41,7 @@ CREATE TABLE `tasks`
     `user_id`      BIGINT UNSIGNED NOT NULL,
     `status_id`    BIGINT UNSIGNED NOT NULL,
     `priority_id`  BIGINT UNSIGNED NOT NULL,
+    `project_id`   BIGINT UNSIGNED NOT NULL,
     `name`         VARCHAR(255),
     `description`  TEXT,
     `url`          VARCHAR(255) COMMENT 'ссылка на задачу в сети',
@@ -44,7 +52,8 @@ CREATE TABLE `tasks`
 
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
     FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`),
-    FOREIGN KEY (`priority_id`) REFERENCES `priorities` (`id`)
+    FOREIGN KEY (`priority_id`) REFERENCES `priorities` (`id`),
+    FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`)
 );
 
 DROP TABLE IF EXISTS `lists`;
@@ -66,4 +75,23 @@ CREATE TABLE `lists_tasks`
     PRIMARY KEY (`list_id`, `task_id`),
     FOREIGN KEY (`list_id`) REFERENCES `lists` (`id`),
     FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`)
+);
+
+DROP TABLE IF EXISTS `spend_times`;
+CREATE TABLE `spend_times`
+(
+    `task_id`    BIGINT UNSIGNED NOT NULL,
+    `start_time` DATETIME,
+    `end_time`   DATETIME
+);
+
+DROP TABLE IF EXISTS `filters`;
+CREATE TABLE `filters`
+(
+    `id` SERIAL PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `url` VARCHAR(255) NOT NULL,
+
+
 );
