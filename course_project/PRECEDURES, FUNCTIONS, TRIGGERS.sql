@@ -51,7 +51,7 @@ SELECT get_user_execution_tasks(1);
 SELECT id, get_user_execution_tasks(id) as cnt
 FROM shop.users;
 
--- триггер: когда мы удаляем роль дял задачи нужно следить, чтобы у задачи оставалось хотя бы одна роль
+-- триггер: когда мы удаляем роль для задачи нужно следить, чтобы у задачи оставалось хотя бы одна роль
 DROP TRIGGER IF EXISTS delete_task_role;
 CREATE TRIGGER delete_task_role
     BEFORE DELETE
